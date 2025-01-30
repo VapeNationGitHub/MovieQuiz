@@ -139,6 +139,11 @@
                             <constraint firstItem="zDV-d6-qAr" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="odd-9h-iLj"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="counterLabel" destination="kWz-aC-ELe" id="erO-65-ac3"/>
+                        <outlet property="imageView" destination="TRY-Iz-rZw" id="kSw-iM-CjA"/>
+                        <outlet property="textLabel" destination="cbW-40-QRr" id="uvA-lO-Nek"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>

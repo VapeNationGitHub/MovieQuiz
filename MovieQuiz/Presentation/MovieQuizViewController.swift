@@ -4,9 +4,8 @@ final class MovieQuizViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        show(quiz: convert(model: questions[0]))
     }
-    
     
     struct QuizQuestion {
         // строка с названием фильма,
@@ -68,10 +67,22 @@ final class MovieQuizViewController: UIViewController {
     // переменная со счётчиком правильных ответов, начальное значение закономерно 0
     private var correctAnswers = 0
     
+    @IBOutlet weak var imageView: UIImageView!
     
-    @IBOutlet private var imageView: UIImageView!
-    @IBOutlet private var textLabel: UILabel!
-    @IBOutlet private var counterLabel: UILabel!
+    @IBOutlet weak var textLabel: UILabel!
+    
+    @IBOutlet weak var counterLabel: UILabel!
+    
+    
+    
+    
+    /*
+    @IBOutlet weak var imageView: UIImageView!
+    
+    @IBOutlet weak var textLabel: UILabel!
+    
+    @IBOutlet weak var counterLabel: UILabel!
+ */
     
     // метод вызывается, когда пользователь нажимает на кнопку "Да"
     @IBAction private func yesButtonClicked(_ sender: Any) {
