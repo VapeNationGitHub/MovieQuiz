@@ -68,15 +68,6 @@ class QuestionFactory: QuestionFactoryProtocol {
         delegate?.didReceiveNextQuestion(question: question)
     }
     
-    
-    /*
-     func requestNextQuestion() -> QuizQuestion? {
-     guard currentIndex < questions.count else { return nil }
-     let question = questions[currentIndex]
-     currentIndex += 1
-     return question
-     }
-     */
     // Сбросить индекс вопросов
     func reset() {
         currentIndex = 0
