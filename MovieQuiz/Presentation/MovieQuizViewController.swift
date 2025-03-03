@@ -15,6 +15,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private let alertPresenter = AlertPresenter()
+    private var statisticService: StatisticServiceProtocol!
     
     
     
@@ -22,17 +23,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        statisticService = StatisticService()
+        
         let questionFactory = QuestionFactory()
         questionFactory.delegate = self
         self.questionFactory = questionFactory
         questionFactory.requestNextQuestion()
-        /*
-         if let firstQuestion = questionFactory.requestNextQuestion() {
-         currentQuestion = firstQuestion
-         let viewModel = convert(model: firstQuestion)
-         show(quiz: viewModel)
-         }
-         */
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -85,7 +81,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     @IBAction func yesButtonCkick(_ sender: UIButton) {
-        //let currentQuestion = questions[currentQuestionIndex]
         guard let currentQuestion = currentQuestion else {
             return
         }
@@ -112,63 +107,35 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         } else {
             currentQuestionIndex += 1
             self.questionFactory?.requestNextQuestion()
-            /*
-             if let nextQuestion = questionFactory.requestNextQuestion() {
-             currentQuestion = nextQuestion
-             let viewModel = convert(model: nextQuestion)
-             
-             show(quiz: viewModel)
-             }
-             */
         }
     }
     // Показать алерт
     private func showQuizResults() {
         
+        statisticService.store(correct: correctAnswers, total: questionFactory?.questionsCount ?? 0)
+        let bestGame = statisticService.bestGame
+        let resultText = "Ваш результат: \(correctAnswers)/\(questionFactory?.questionsCount ?? 0)"
+        let gamesCountText = "Количество сыграных квизов: \(statisticService.gamesCount)"
+        let bestGameText = "Рекорд: \(bestGame.correct)/\(bestGame.total) (\(bestGame.date.dateTimeString))"
+        let accuracyText = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+        
+        let message = [resultText, gamesCountText, bestGameText, accuracyText].joined(separator: "\n")
+        
         let alertModel = AlertModel(
-            title: "Раунд окончен!",
-            message: "Вы правильно ответили на \(correctAnswers) из \(questionFactory?.questionsAmount ?? 0) вопросов.",
+            title: "Этот раунд окончен!",
+            message: message,
             buttonText: "Сыграть еще раз",
             completion: { [weak self] in
                 self?.restartQuiz()
             }
         )
         alertPresenter.showAlert(from: self, with: alertModel)
-        
-        
-        /*
-         let alert = UIAlertController(
-         title: "Раунд окончен!",
-         message: "Вы правильно ответили на \(correctAnswers) из \(questionsAmount) вопросов.",
-         preferredStyle: .alert
-         )
-         
-         let restartAction = UIAlertAction(title: "Сыграть еще раз", style: .default) { [weak self] _ in
-         self?.restartQuiz()
-         }
-         alert.addAction(restartAction)
-         present(alert, animated: true)
-         */
-        
     }
-    
-    
-    
-    
     
     // Cброс игры
     private func restartQuiz() {
-        // questionFactory.reset() // Сбросить индекс вопросов
         currentQuestionIndex = 0
         correctAnswers = 0
         questionFactory?.requestNextQuestion()
-        /*
-         if let firstQuestion = self.questionFactory.requestNextQuestion() {
-         self.currentQuestion = firstQuestion
-         let viewModel = self.convert(model: firstQuestion)
-         
-         self.show(quiz: viewModel)
-         }
-         */
     }
 }
