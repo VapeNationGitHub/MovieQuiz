@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 // Фабрика вопросов
-class QuestionFactory: QuestionFactoryProtocol {
+final class QuestionFactory: QuestionFactoryProtocol {
     weak var delegate: QuestionFactoryDelegate?
     // массив вопросов
     private let questions: [QuizQuestion] = [
