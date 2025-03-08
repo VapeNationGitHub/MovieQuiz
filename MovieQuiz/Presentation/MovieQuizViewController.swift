@@ -24,14 +24,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        activityIndicator.hidesWhenStopped = true // Индикатор загрузки скрывается автоматически
+        
         textLabel.font = UIFont(name: "YSDisplay-Bold", size: 23) ?? UIFont.systemFont(ofSize: 23, weight: .bold)
         counterLabel.font = UIFont(name: "YSDisplay-Medium", size: 20) ?? UIFont.systemFont(ofSize: 20, weight: .medium)
-        /*
-         let questionFactory = QuestionFactory()
-         questionFactory.delegate = self
-         self.questionFactory = questionFactory
-         questionFactory.requestNextQuestion()
-         */
         
         imageView.layer.cornerRadius = 20
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
@@ -59,7 +55,21 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     func didLoadDataFromServer() {
         activityIndicator.isHidden = true // скрываем индикатор загрузки
-        questionFactory?.requestNextQuestion()
+        requestNextQuestionWithLoading() // Анимация загрзуки
+        //questionFactory?.requestNextQuestion()
+    }
+    
+    // Показать activityIndicator перед загрузкой вопроса
+    private func requestNextQuestionWithLoading() {
+        activityIndicator.startAnimating() // Показываем индикатор перед загрузкой
+        
+        DispatchQueue.global().async { [weak self] in
+            self?.questionFactory?.requestNextQuestion()
+            
+            DispatchQueue.main.async {
+                self?.activityIndicator.stopAnimating() // Скрываем индикатор после загрузки вопроса
+            }
+        }
     }
     
     func didFailToLoadData(with error: Error) {
@@ -73,7 +83,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     
     private func showLoadingIndicator() {
-        activityIndicator.isHidden = false // говорим, что индикатор загрузки не скрыт
         activityIndicator.startAnimating() // включаем анимацию
     }
     
@@ -86,7 +95,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             buttonText: "Попробовать ещё раз",
             completion: { [weak self] in
                 self?.showLoadingIndicator()
-                self?.questionFactory?.requestNextQuestion()
+                self?.questionFactory?.loadData()
             }
         )
         alertPresenter.showAlert(from: self, with: alertModel)
@@ -94,16 +103,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     
     // приватный метод конвертации, который принимает моковый вопрос и возвращает вью модель для главного экрана
-    /*
-     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-     let questionStep = QuizStepViewModel( // 1
-     image: UIImage(named: model.image) ?? UIImage(), // 2
-     question: model.text, // 3
-     questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)") // 4
-     return questionStep
-     }
-     */
-    
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         return QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),

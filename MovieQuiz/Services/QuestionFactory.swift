@@ -17,7 +17,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
     func loadData() {
         moviesLoader.loadMovies { [weak self] result in
             DispatchQueue.main.async {
-                guard let self = self else { return }
+                guard let self else { return }
                 switch result {
                 case .success(let mostPopularMovies):
                     self.movies = mostPopularMovies.items
@@ -31,17 +31,25 @@ final class QuestionFactory: QuestionFactoryProtocol {
     
     func requestNextQuestion() {
         DispatchQueue.global().async { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             let index = (0..<self.movies.count).randomElement() ?? 0
             
             guard let movie = self.movies[safe: index] else { return }
             
-            var imageData = Data()
+            var imageData: Data?
             
             do {
-                imageData = try Data(contentsOf: movie.resizedImageURL)
+                imageData = try Data(contentsOf: movie.imageURL)
             } catch {
-                print("Failed to load image")
+                print("Ошибка при загрузке изображения")
+            }
+            
+            // Вывод алерт, если изображение не загружено и прерываем функцию
+            guard let imageData = imageData else {
+                DispatchQueue.main.async {
+                    self.showImageLoadErrorAlert()
+                }
+                return
             }
             
             let rating = Float(movie.rating) ?? 0
@@ -54,9 +62,28 @@ final class QuestionFactory: QuestionFactoryProtocol {
                                         correctAnswer: correctAnswer)
             
             DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
+                guard let self else { return }
                 self.delegate?.didReceiveNextQuestion(question: question)
             }
+        }
+    }
+    
+    private func showImageLoadErrorAlert() {
+        let alert = UIAlertController(
+            title: "Ошибка загрузки изображения",
+            message: "Не удалось загрузить постер фильма. Попробуйте ещё раз.",
+            preferredStyle: .alert
+        )
+        
+        let retryAction = UIAlertAction(title: "Повторить", style: .default) { _ in
+            self.requestNextQuestion()
+        }
+        
+        alert.addAction(retryAction)
+        
+        // Отображаем алерт через делегат
+        if let viewController = delegate as? UIViewController {
+            viewController.present(alert, animated: true)
         }
     }
     
