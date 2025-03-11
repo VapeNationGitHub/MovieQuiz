@@ -39,6 +39,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         showLoadingIndicator()
         questionFactory?.loadData()
+        presenter.viewController = self
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -130,7 +131,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     // метод меняет цвет рамки
-    private func showAnswerResult(isCorrect: Bool) {
+    func showAnswerResult(isCorrect: Bool) {
         if isCorrect {
             correctAnswers += 1
         }
@@ -145,22 +146,31 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
-    @IBAction func yesButtonCkick(_ sender: UIButton) {
+    @IBAction private func yesButtonCkick(_ sender: UIButton) {
+        presenter.currentQuestion = currentQuestion
+        presenter.yesButtonCkick()
+        
+        /*
         guard let currentQuestion = currentQuestion else {
             return
         }
         let givenAnswer = true
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+         */
     }
     
     
-    @IBAction func noButtonClicked(_ sender: UIButton) {
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
+        presenter.currentQuestion = currentQuestion
+        presenter.noButtonClicked()
+        /*
         // let currentQuestion = questions[currentQuestionIndex]
         guard let currentQuestion = currentQuestion else {
             return
         }
         let givenAnswer = false
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+         */
     }
     
     // приватный метод, который содержит логику перехода в один из сценариев
