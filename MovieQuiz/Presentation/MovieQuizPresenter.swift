@@ -8,8 +8,13 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var currentQuestion: QuizQuestion?
     private weak var viewController: MovieQuizProtocol?
     
+    
+    private var questionFactory: QuestionFactoryProtocol?
+    private var statisticService: StatisticServiceProtocol = StatisticService()
+    
     init(viewController: MovieQuizProtocol) {
         self.viewController = viewController
+        self.questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
     }
     
     func isLastQuestion() -> Bool {
@@ -66,12 +71,24 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             viewController?.showQuizResults()
         } else {
             switchToNextQuestion()
-            viewController?.requestNextQuestion()
+            requestNextQuestion()
         }
     }
     
-    // алерт
-    func showQuizResults(statisticService: StatisticServiceProtocol) {
+    func loadData() {
+        questionFactory?.loadData()
+    }
+    
+    func requestNextQuestion() {
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func restartQuiz() {
+        resetQuestionIndex()
+        requestNextQuestion()
+    }
+    
+    func showQuizResults() {
         statisticService.store(correct: correctAnswers, total: questionsAmount)
         let bestGame = statisticService.bestGame
         let resultText = "Ваш результат: \(correctAnswers)/\(questionsAmount)"
@@ -86,13 +103,12 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             message: message,
             buttonText: "Сыграть еще раз",
             completion: { [weak self] in
-                self?.resetQuestionIndex()
-                self?.viewController?.restartQuiz()
+                self?.restartQuiz()
             }
         )
         viewController?.showAlert(with: alertModel)
     }
-
+    
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
             return
@@ -107,7 +123,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     func didLoadDataFromServer() {
-        viewController?.requestNextQuestion()
+        requestNextQuestion()
     }
     
     func didFailToLoadData(with error: Error) {

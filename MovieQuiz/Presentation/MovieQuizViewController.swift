@@ -8,9 +8,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizProtocol {
     @IBOutlet private weak var counterLabel: UILabel!
     @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     
-    private var questionFactory: QuestionFactoryProtocol?
     private let alertPresenter = AlertPresenter()
-    private var statisticService: StatisticServiceProtocol = StatisticService()
     private var presenter: MovieQuizPresenter!
     
     // MARK: - Lifecycle
@@ -20,18 +18,18 @@ final class MovieQuizViewController: UIViewController, MovieQuizProtocol {
         imageView.accessibilityIdentifier = "Poster"
         counterLabel.accessibilityIdentifier = "Index"
         
-        activityIndicator.hidesWhenStopped = true // Индикатор загрузки скрывается автоматически
+        activityIndicator.hidesWhenStopped = true
         
         textLabel.font = UIFont(name: "YSDisplay-Bold", size: 23) ?? UIFont.systemFont(ofSize: 23, weight: .bold)
         counterLabel.font = UIFont(name: "YSDisplay-Medium", size: 20) ?? UIFont.systemFont(ofSize: 20, weight: .medium)
         
         imageView.layer.cornerRadius = 20
+        imageView.layer.masksToBounds = true
         
         presenter = MovieQuizPresenter(viewController: self)
-        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: presenter)
         
         showLoadingIndicator()
-        questionFactory?.loadData()
+        presenter.loadData()
     }
     
     // MARK: - MovieQuizProtocol
@@ -44,29 +42,30 @@ final class MovieQuizViewController: UIViewController, MovieQuizProtocol {
         
         imageView.layer.borderWidth = 0
         imageView.layer.borderColor = UIColor.clear.cgColor
+        
+        activityIndicator.stopAnimating()
     }
     
     // метод меняет цвет рамки
     func showAnswerResult(isCorrect: Bool) {
-        imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
     }
     
-    // Показать алерт
     func showQuizResults() {
-        presenter.showQuizResults(statisticService: statisticService)
+        presenter.showQuizResults()
     }
     
     func requestNextQuestion() {
-        questionFactory?.requestNextQuestion()
+        presenter.requestNextQuestion()
     }
     
     // Сброс игры
     func restartQuiz() {
-        questionFactory?.requestNextQuestion()
+        presenter.restartQuiz()
     }
     
+    // Показать алерт
     func showAlert(with alertModel: AlertModel) {
         alertPresenter.showAlert(from: self, with: alertModel)
     }
@@ -80,7 +79,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizProtocol {
             buttonText: "Попробовать ещё раз",
             completion: { [weak self] in
                 self?.showLoadingIndicator()
-                self?.questionFactory?.loadData()
+                self?.presenter.loadData()
             }
         )
         showAlert(with: alertModel)
