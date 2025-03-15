@@ -8,7 +8,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var currentQuestion: QuizQuestion?
     private weak var viewController: MovieQuizProtocol?
     
-    
     private var questionFactory: QuestionFactoryProtocol?
     private var statisticService: StatisticServiceProtocol = StatisticService()
     
